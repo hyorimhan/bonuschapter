@@ -6,12 +6,12 @@ export const useLoginMutation = () => {
   const navigate = useNavigate();
   return useMutation({
     mutationFn: handleLogin,
-    onSuccess: (data) => {
-      alert(data.message);
+    onSuccess: () => {
+      alert('로그인 되었습니다');
       navigate('/');
     },
-    onError: (error) => {
-      alert(error.message);
+    onError: () => {
+      alert('로그인에 실패했습니다');
       navigate('/');
     },
   });
