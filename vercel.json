@@ -9,6 +9,8 @@
   ],
   "routes": [
     { "src": "/api/(.*)", "dest": "server/src/index.ts" },
+    { "src": "/(.*)", "dest": "bonuschapter/dist/$1" },
+    { "handle": "filesystem" },
     { "src": "/(.*)", "dest": "bonuschapter/dist/index.html" }
   ]
 }
