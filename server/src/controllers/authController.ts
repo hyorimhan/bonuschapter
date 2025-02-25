@@ -89,16 +89,13 @@ export const loginHandler: RequestHandler = async (
       sameSite: 'lax',
       maxAge: 3600000,
       path: '/',
-      domain: 'localhost',
     });
 
     console.log('🔐 로그인 성공: 토큰이 쿠키에 설정됨');
-    res
-      .status(200)
-      .json({
-        message: '로그인 성공',
-        user: { id: user.id, username: user.username },
-      });
+    res.status(200).json({
+      message: '로그인 성공',
+      user: { id: user.id, username: user.username },
+    });
   } catch (err) {
     console.error('로그인 에러:', err);
     res.status(500).json({
@@ -119,7 +116,6 @@ export const logoutHandler: RequestHandler = async (
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       path: '/',
-      domain: 'localhost',
     });
 
     console.log('🔓 로그아웃 성공: 쿠키 삭제됨');
