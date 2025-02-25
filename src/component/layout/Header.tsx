@@ -13,7 +13,7 @@ function Header() {
 
       <div className="flex-1 flex justify-center">
         <Button link="/">
-          <img src="../../public/main2.svg" alt="main" width={150} />
+          <img src="/main2.svg" alt="main" width={150} />
         </Button>
       </div>
 
