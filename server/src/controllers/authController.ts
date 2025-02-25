@@ -82,11 +82,10 @@ export const loginHandler: RequestHandler = async (
       { expiresIn: '1h' }
     );
 
-    // 쿠키 설정
     res.cookie('token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production', // 배포 시 true
+      sameSite: 'none', // cross-site 허용
       maxAge: 3600000,
       path: '/',
     });
@@ -114,7 +113,7 @@ export const logoutHandler: RequestHandler = async (
     res.clearCookie('token', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'none',
       path: '/',
     });
 

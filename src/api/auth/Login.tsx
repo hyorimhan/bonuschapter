@@ -8,7 +8,7 @@ export const handleLogin = async ({
   password: string;
 }) => {
   try {
-    const response = await fetch(`${default_url}/auth/login`, {
+    const response = await fetch(`${default_url}/api/auth/login`, {
       method: 'POST',
       credentials: 'include',
       headers: {

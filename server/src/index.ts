@@ -24,7 +24,7 @@ app.use(express.json());
 app.use(helmet());
 app.use(cookieParser());
 
-app.use('/auth', authRoutes);
+app.use('/api/auth', authRoutes);
 app.use('/api/recommended-books', recommendedBooksRoutes);
 app.use('/api/books', bookRoutes);
 

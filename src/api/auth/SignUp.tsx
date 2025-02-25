@@ -9,7 +9,7 @@ export const handleSignUp = async ({
   password: string;
 }) => {
   try {
-    const response = await fetch(`${default_url}/auth/signup`, {
+    const response = await fetch(`${default_url}/api/auth/signup`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
