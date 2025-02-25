@@ -5,16 +5,17 @@
       "use": "@vercel/node"
     },
     {
-      "src": "bonuschapter/package.json",
+      "src": "package.json",
       "use": "@vercel/static-build",
       "config": {
-        "distDir": "bonuschapter/dist"
+        "distDir": "dist"
       }
     }
   ],
   "routes": [
     { "src": "/api/(.*)", "dest": "server/src/index.ts" },
-
-    { "src": "/(.*)", "dest": "bonuschapter/dist/index.html" }
+    { "src": "/(.*)", "dest": "dist/$1" },
+    { "handle": "filesystem" },
+    { "src": "/.*", "dest": "dist/index.html" }
   ]
 }
