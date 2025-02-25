@@ -1,0 +1,41 @@
+@import 'tailwindcss';
+@import 'swiper/css';
+@import 'swiper/css/pagination';
+@import 'swiper/css/navigation';
+
+@import 'swiper/css/autoplay';
+
+@theme {
+  --color-text-charcoal: #333333;
+  --color-bg-cream: #faf3e0;
+  --color-point-lavender: #e0bbe4;
+  --color-secondary-pink: #ffc9de;
+  --color-primary-blue: #a9d6e5;
+}
+
+@layer base {
+  @font-face {
+    font-family: 'Ownglyph_ryurue-Rg';
+    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/2405-2@1.0/Ownglyph_ryurue-Rg.woff2')
+      format('woff2');
+    font-weight: normal;
+    font-style: normal;
+  }
+
+  body {
+    font-family: 'Ownglyph_ryurue-Rg', sans-serif;
+    color: var(--color-text-charcoal);
+    background-color: var(--color-bg-cream);
+  }
+}
+@layer utilities {
+  .btn-blue {
+    background-color: var(--color-primary-blue);
+    padding: 0.5rem 8rem 0.5rem 8rem;
+    border-radius: 0.5rem;
+  }
+  .btn-blue:hover {
+    filter: brightness(1.1);
+    cursor: pointer;
+  }
+}
