@@ -1,16 +1,20 @@
 {
   "builds": [
-    { "src": "server/src/index.ts", "use": "@vercel/node" },
+    {
+      "src": "server/src/index.ts",
+      "use": "@vercel/node"
+    },
     {
       "src": "bonuschapter/package.json",
       "use": "@vercel/static-build",
-      "config": { "distDir": "bonuschapter/dist" }
+      "config": {
+        "distDir": "bonuschapter/dist"
+      }
     }
   ],
   "routes": [
     { "src": "/api/(.*)", "dest": "server/src/index.ts" },
-    { "src": "/(.*)", "dest": "bonuschapter/dist/$1" },
-    { "handle": "filesystem" },
+
     { "src": "/(.*)", "dest": "bonuschapter/dist/index.html" }
   ]
 }
