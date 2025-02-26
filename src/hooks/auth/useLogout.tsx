@@ -7,6 +7,7 @@ export const useLogoutMutation = () => {
     mutationFn: handleLogout,
     onSuccess: (data) => {
       alert(data.message);
+      queryClient.setQueryData(['userInfo'], null);
       queryClient.invalidateQueries({ queryKey: ['userInfo'] });
     },
     onError: (error) => {
