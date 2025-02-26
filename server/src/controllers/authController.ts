@@ -84,7 +84,7 @@ export const loginHandler: RequestHandler = async (
 
     res.cookie('token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // 배포 시 true
+      secure: true, // 배포 시 true
       sameSite: 'none', // cross-site 허용
       maxAge: 3600000,
       path: '/',
@@ -112,7 +112,7 @@ export const logoutHandler: RequestHandler = async (
   try {
     res.clearCookie('token', {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: true,
       sameSite: 'none',
       path: '/',
     });
