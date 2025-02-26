@@ -4,12 +4,14 @@ import { useBookDetailStore } from '../../zustand/useBookDetailStore';
 import { useEffect } from 'react';
 import { useInfiniteBookInfo } from '../../hooks/book/useGetBookInfo';
 import Loading from '../common/Loading';
+import { useInfoQuery } from '../../hooks/auth/useInfo';
 
 function GetRegisterBook() {
   const { books, fetchNextPage, hasNextPage, isFetchingNextPage, isPending } =
     useInfiniteBookInfo();
   const { setIsbn } = useBookDetailStore();
   const navigate = useNavigate();
+  const { userInfo } = useInfoQuery();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -31,7 +33,7 @@ function GetRegisterBook() {
     <>
       <span className="text-4xl justify-center flex mt-20 mb-10">읽은 책</span>
       <div className="grid grid-cols-5 gap-3">
-        {books.length > 0 ? (
+        {books.length > 0 && userInfo ? (
           books.map((post: BooksType, index) =>
             post?.title ? ( // title이 없는 데이터는 렌더링하지 않음
               <div
