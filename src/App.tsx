@@ -13,8 +13,6 @@ const queryClient = new QueryClient();
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      {' '}
-      {/* ✅ QueryClientProvider 추가 */}
       <BrowserRouter>
         <Header />
         <Routes>

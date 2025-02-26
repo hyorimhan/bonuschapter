@@ -14,8 +14,8 @@ const GetBookInfo = async ({ pageParam = '' }) => {
 
     if (Array.isArray(data)) {
       return {
-        books: data, // 데이터 배열 저장
-        nextCursor: data.length === 8 ? data[data.length - 1].id : null, // 다음 페이지 커서
+        books: data,
+        nextCursor: data.length === 8 ? data[data.length - 1].id : null,
       };
     }
 

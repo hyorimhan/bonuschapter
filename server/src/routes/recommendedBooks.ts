@@ -20,7 +20,6 @@ router.get('/', async (req: Request, res: Response) => {
       explicitArray: false,
     });
 
-    // ✅ 필요 데이터 추출
     const books = jsonData.response.docs.doc.map((book: any) => ({
       ranking: book.ranking,
       title: book.bookname.replace(/ *:.*$/, ''), // 책 제목에서 불필요한 부분 제거

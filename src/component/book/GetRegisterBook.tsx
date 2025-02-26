@@ -35,9 +35,9 @@ function GetRegisterBook() {
       <div className="grid grid-cols-5 gap-3">
         {books.length > 0 && userInfo ? (
           books.map((post: BooksType, index) =>
-            post?.title ? ( // title이 없는 데이터는 렌더링하지 않음
+            post?.title ? (
               <div
-                key={post.isbn ?? index} // id가 없을 경우 index 사용
+                key={post.isbn ?? index}
                 className="cursor-pointer p-4 transition-shadow border rounded-lg shadow-sm hover:shadow-md"
                 onClick={() => {
                   if (post?.isbn) {
@@ -57,12 +57,11 @@ function GetRegisterBook() {
                   )}
                   <span>
                     {post.read_date &&
-                      (!isNaN(Number(post.read_date)) // ✅ 타임스탬프인지 확인
+                      (!isNaN(Number(post.read_date))
                         ? new Date(Number(post.read_date))
                             .toISOString()
-                            .split('T')[0] // ✅ 숫자인 경우 변환
+                            .split('T')[0]
                         : post.read_date)}{' '}
-                    {/* ✅ 이미 YYYY-MM-DD 형식이면 그대로 사용 */}
                   </span>
                 </div>
               </div>
