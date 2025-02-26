@@ -5,7 +5,6 @@ import { useInfiniteBookInfo } from '../hooks/book/useGetBookInfo';
 
 function Home() {
   const { books } = useInfiniteBookInfo();
-  console.log(books);
   return (
     <BaseLayout>
       <RecommendBooks />

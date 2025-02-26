@@ -18,7 +18,6 @@ function BookDetail() {
   const usePatchMutation = usePatchBookInfo();
 
   const filteredBooks = books.filter((book) => book.isbn === isbn);
-  console.log(books);
   return (
     <BaseLayout>
       {' '}

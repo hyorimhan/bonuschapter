@@ -8,8 +8,6 @@ export const signupHandler: RequestHandler = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  console.log('📌 회원가입 요청 데이터:', req.body);
-
   const { id, username, password } = req.body;
 
   if (!id || !username || !password) {
@@ -91,7 +89,6 @@ export const loginHandler: RequestHandler = async (
       path: '/',
     });
 
-    console.log('🔐 로그인 성공: 토큰이 쿠키에 설정됨');
     res.status(200).json({
       message: '로그인 성공',
       user: { id: user.id, username: user.username },
@@ -119,7 +116,6 @@ export const logoutHandler: RequestHandler = async (
       path: '/',
     });
 
-    console.log('🔓 로그아웃 성공: 쿠키 삭제됨');
     res.status(200).json({ message: '로그아웃 성공' });
   } catch (err) {
     console.error('로그아웃 에러:', err);

@@ -16,8 +16,6 @@ export const useInfiniteBookInfo = () => {
     getNextPageParam: (lastPage) => lastPage?.nextCursor ?? null,
   });
 
-  console.log('Fetched Infinite Data:', data);
-
   return {
     books: data?.pages?.flatMap((page) => page.books) ?? [],
     fetchNextPage,
