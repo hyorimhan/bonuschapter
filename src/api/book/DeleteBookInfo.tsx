@@ -6,6 +6,11 @@ const DeleteBookInfo = async (isbn: string) => {
       method: 'DELETE',
       credentials: 'include',
     });
+
+    if (!response.ok) {
+      const errData = await response.json().catch(() => ({}));
+      throw new Error(errData.message || '책 삭제 실패');
+    }
     return await response.json();
   } catch (error) {
     console.log(error);

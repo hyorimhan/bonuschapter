@@ -15,7 +15,8 @@ const PatchBookInfo = async (
     });
 
     if (!response.ok) {
-      throw new Error('Failed to update book');
+      const errData = await response.json().catch(() => ({}));
+      throw new Error(errData.message || '수정 실패');
     }
 
     return await response.json();

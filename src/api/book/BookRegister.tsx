@@ -19,6 +19,11 @@ export const BookRegister = async (book: BooksType) => {
         memo: book.memo,
       }),
     });
+
+    if (!response.ok) {
+      const errData = await response.json().catch(() => ({}));
+      throw new Error(errData.message || '책 등록 실패');
+    }
     return await response.json();
   } catch (error) {
     console.log(error);
