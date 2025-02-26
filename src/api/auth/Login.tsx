@@ -1,4 +1,4 @@
-const default_url = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const default_url = import.meta.env.VITE_API_URL.replace(/\/+$/, '');
 
 export const handleLogin = async ({
   id,

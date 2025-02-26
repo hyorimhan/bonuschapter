@@ -5,9 +5,10 @@ export const useLogoutMutation = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: handleLogout,
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       alert(data.message);
       queryClient.invalidateQueries({ queryKey: 'userInfo' });
+      await queryClient.refetchQueries({ queryKey: 'userInfo' });
     },
     onError: (error) => {
       alert(error.message);

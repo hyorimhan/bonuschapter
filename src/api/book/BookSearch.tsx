@@ -1,5 +1,5 @@
 const API_URL = 'https://dapi.kakao.com/v3/search/book';
-const REST_API_KEY = import.meta.env.VITE_REST_API_KEY;
+const REST_API_KEY = import.meta.env.VITE_REST_API_KEY.replace(/\/+$/, '');
 
 export const BookSearch = async (query: string, page: number, size: number) => {
   try {

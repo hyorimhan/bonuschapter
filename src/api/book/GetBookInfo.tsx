@@ -1,4 +1,4 @@
-const default_url = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const default_url = import.meta.env.VITE_API_URL.replace(/\/+$/, '');
 
 const GetBookInfo = async ({ pageParam = '' }) => {
   try {
@@ -11,7 +11,6 @@ const GetBookInfo = async ({ pageParam = '' }) => {
     );
 
     const data = await response.json();
-    console.log('Raw API Response:', data);
 
     if (Array.isArray(data)) {
       return {
