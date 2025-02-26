@@ -1,7 +1,8 @@
 import { Request, RequestHandler, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import db from '../db';
+// 🍀 postgres pool import
+import pool from '../db';
 
 export const signupHandler: RequestHandler = async (
   req: Request,
@@ -19,19 +20,16 @@ export const signupHandler: RequestHandler = async (
   }
 
   try {
+    // 1) 비밀번호 해싱
     const hashedPassword = await bcrypt.hash(password, 10);
-    const query = `INSERT INTO users (id, username, password) VALUES (?, ?, ?)`;
 
-    await new Promise<void>((resolve, reject) => {
-      db.run(
-        query,
-        [String(id), String(username), hashedPassword],
-        function (err) {
-          if (err) reject(err);
-          else resolve();
-        }
-      );
-    });
+    // 2) PostgreSQL에 회원 삽입
+    //    (Sqlite: INSERT INTO ... VALUES (?, ?, ?) → PG: $1, $2, $3)
+    await pool.query(
+      `INSERT INTO users (id, username, password)
+       VALUES ($1, $2, $3)`,
+      [String(id), String(username), hashedPassword]
+    );
 
     res.status(201).json({ message: '회원가입 성공', userId: id });
   } catch (err) {
@@ -55,38 +53,41 @@ export const loginHandler: RequestHandler = async (
   }
 
   try {
-    const user = await new Promise<
-      { id: string; username: string; password: string } | undefined
-    >((resolve, reject) => {
-      const query = `SELECT * FROM users WHERE id = ?`;
-      db.get(query, [id], (err: Error | null, row: any) => {
-        if (err) reject(err);
-        else resolve(row);
-      });
-    });
+    // 1) 사용자 조회
+    //    (Sqlite: db.get('SELECT * FROM users WHERE id = ?', ...)
+    //     → PG: pool.query('SELECT * FROM ... WHERE id = $1', [id]))
+    const { rows } = await pool.query(
+      `SELECT id, username, password FROM users WHERE id = $1`,
+      [id]
+    );
+    const user = rows[0];
 
+    // 2) 사용자 존재 여부
     if (!user) {
       res.status(401).json({ message: '존재하지 않는 사용자입니다.' });
       return;
     }
 
+    // 3) 비밀번호 비교
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       res.status(401).json({ message: '비밀번호가 올바르지 않습니다.' });
       return;
     }
 
+    // 4) JWT 발급
     const token = jwt.sign(
       { id: user.id, username: user.username },
       process.env.JWT_SECRET || 'default-secret',
       { expiresIn: '1h' }
     );
 
+    // 5) 쿠키에 토큰 저장
     res.cookie('token', token, {
       httpOnly: true,
-      secure: true, // 배포 시 true
+      secure: true, // HTTPS 환경이면 true (Vercel 배포 시)
       sameSite: 'none', // cross-site 허용
-      maxAge: 3600000,
+      maxAge: 3600000, // 1시간
       path: '/',
     });
 
@@ -104,12 +105,13 @@ export const loginHandler: RequestHandler = async (
   }
 };
 
-// ✅ 로그아웃 핸들러 추가
+// ✅ 로그아웃 핸들러
 export const logoutHandler: RequestHandler = async (
   req: Request,
   res: Response
 ): Promise<void> => {
   try {
+    // 쿠키 제거
     res.clearCookie('token', {
       httpOnly: true,
       secure: true,

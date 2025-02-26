@@ -1,5 +1,5 @@
 import express, { Response, Request, NextFunction } from 'express';
-import db from '../db/index';
+import pool from '../db'; // ← 'db' 대신 Postgres pool import
 import authMiddleware from '../middlewares/authMiddleware';
 
 const router = express.Router();
@@ -21,7 +21,11 @@ const withAuth = (
   };
 };
 
-/** 📌 ✅ 도서 저장 (중복 방지) */
+/**
+ * 📌 ✅ 도서 저장 (중복 방지)
+ *    - 기존 sqlite: db.get → db.run
+ *    - 변경: pool.query(...) 두 번 (SELECT, INSERT)
+ */
 router.post(
   '/save',
   authMiddleware,
@@ -35,33 +39,24 @@ router.post(
 
     try {
       // ✅ 중복 방지: 이미 저장된 책인지 확인
-      const existingBook = await new Promise<any>((resolve, reject) => {
-        db.get(
-          'SELECT * FROM books WHERE user_id = ? AND isbn = ?',
-          [user_id, isbn],
-          (err, row) => {
-            if (err) reject(err);
-            else resolve(row);
-          }
-        );
-      });
+      const {
+        rows: [existingBook],
+      } = await pool.query(
+        'SELECT * FROM books WHERE user_id = $1 AND isbn = $2',
+        [user_id, isbn]
+      );
 
       if (existingBook) {
         return res.status(409).json({ message: '이미 저장된 도서입니다.' });
       }
 
       // ✅ 도서 저장
-      const query = `INSERT INTO books (user_id, title, authors, thumbnail, isbn, read_date, memo) VALUES (?, ?, ?, ?, ?, ?, ?)`;
-      await new Promise<void>((resolve, reject) => {
-        db.run(
-          query,
-          [user_id, title, authors, thumbnail, isbn, read_date, memo ?? ''],
-          (err) => {
-            if (err) reject(err);
-            else resolve();
-          }
-        );
-      });
+      await pool.query(
+        `INSERT INTO books
+         (user_id, title, authors, thumbnail, isbn, read_date, memo)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+        [user_id, title, authors, thumbnail, isbn, read_date, memo ?? '']
+      );
 
       res.json({ message: '도서 저장 성공' });
     } catch (error) {
@@ -71,35 +66,41 @@ router.post(
   })
 );
 
-/** 📌 ✅ 저장된 도서 목록 조회 (무한 스크롤 지원) */
+/**
+ * 📌 ✅ 저장된 도서 목록 조회 (무한 스크롤 지원)
+ *    - 기존 sqlite: db.all
+ *    - 변경: pool.query(...) 동적 쿼리 구성
+ */
 router.get(
   '/saved',
   authMiddleware,
   withAuth(async (req, res) => {
     const user_id = req.user.id;
     const { cursor, limit } = req.query;
-    const pageSize = parseInt(limit as string) || 8; // ✅ 기본 limit: 8개
+    const pageSize = parseInt(limit as string, 10) || 8; // ✅ 기본 limit: 8개
 
     try {
-      let query = 'SELECT * FROM books WHERE user_id = ?';
+      // ✅ 동적으로 WHERE/ORDER/LIMIT 구성
+      //    $1, $2 등 포지션 파라미터를 순서대로 채움
+      let query = 'SELECT * FROM books WHERE user_id = $1';
       const params: any[] = [user_id];
+      let paramIndex = 2;
 
+      // cursor가 있으면 read_date < cursor
       if (cursor) {
-        query += ' AND read_date < ?'; // ✅ 최신 read_date부터 가져오기 위해 read_date 내림차순 정렬
+        query += ` AND read_date < $${paramIndex}`;
         params.push(cursor);
+        paramIndex++;
       }
 
-      query += ' ORDER BY read_date DESC, id DESC LIMIT ?'; // ✅ 최신 읽은 날짜순 정렬 + 같은 날짜일 경우 최신 등록순
+      query += ` ORDER BY read_date DESC, id DESC LIMIT $${paramIndex}`;
       params.push(pageSize);
 
-      const books = await new Promise<any[]>((resolve, reject) => {
-        db.all(query, params, (err, rows) => {
-          if (err) reject(err);
-          else resolve(rows);
-        });
-      });
+      const result = await pool.query(query, params);
+      const books = result.rows;
 
-      // ✅ 다음 페이지 존재 여부 확인 (DESC 기준이므로 가장 오래된 read_date를 nextCursor로 설정)
+      // ✅ 다음 페이지 존재 여부 확인
+      //    DESC라서 가장 마지막(오래된)의 read_date를 nextCursor로 지정
       const nextCursor =
         books.length === pageSize ? books[books.length - 1].read_date : null;
 
@@ -111,7 +112,11 @@ router.get(
   })
 );
 
-/** 📌 ✅ 도서 정보 수정 */
+/**
+ * 📌 ✅ 도서 정보 수정
+ *    - 기존 sqlite: db.run
+ *    - 변경: pool.query(...) → rowCount 반환
+ */
 router.patch(
   '/update/:isbn',
   authMiddleware,
@@ -126,17 +131,13 @@ router.patch(
 
     try {
       const query = `
-        UPDATE books 
-        SET read_date = ?, memo = ? 
-        WHERE isbn = ? AND user_id = ?
+        UPDATE books
+        SET read_date = $1, memo = $2
+        WHERE isbn = $3 AND user_id = $4
       `;
 
-      const changes = await new Promise<number>((resolve, reject) => {
-        db.run(query, [read_date, memo, isbn, user_id], function (err) {
-          if (err) reject(err);
-          else resolve(this.changes);
-        });
-      });
+      const result = await pool.query(query, [read_date, memo, isbn, user_id]);
+      const changes = result.rowCount; // 몇 행이 업데이트되었는지
 
       if (changes === 0) {
         return res.status(404).json({ message: '책을 찾을 수 없습니다.' });
@@ -150,7 +151,11 @@ router.patch(
   })
 );
 
-/** 📌 ✅ 도서 삭제 */
+/**
+ * 📌 ✅ 도서 삭제
+ *    - 기존 sqlite: db.run
+ *    - 변경: pool.query(...) → rowCount로 삭제된 행 체크
+ */
 router.delete(
   '/delete/:isbn',
   authMiddleware,
@@ -163,16 +168,11 @@ router.delete(
     }
 
     try {
-      const changes = await new Promise<number>((resolve, reject) => {
-        db.run(
-          'DELETE FROM books WHERE isbn = ? AND user_id = ?',
-          [isbn, user_id],
-          function (err) {
-            if (err) reject(err);
-            else resolve(this.changes);
-          }
-        );
-      });
+      const result = await pool.query(
+        'DELETE FROM books WHERE isbn = $1 AND user_id = $2',
+        [isbn, user_id]
+      );
+      const changes = result.rowCount;
 
       if (changes === 0) {
         return res.status(404).json({ message: '책을 찾을 수 없습니다.' });
