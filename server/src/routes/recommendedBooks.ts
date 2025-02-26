@@ -10,7 +10,7 @@ const router = express.Router();
 router.get('/', async (req: Request, res: Response) => {
   try {
     const apiKey = process.env.SERVICE_KEY;
-    const apiUrl = `http://data4library.kr/api/loanItemSrch?authKey=${apiKey}&startDt=2025-01-01&endDt=2025-02-14`;
+    const apiUrl = `https://data4library.kr/api/loanItemSrch?authKey=${apiKey}&startDt=2025-01-01&endDt=2025-02-14`;
 
     // ✅ axios로 XML 데이터 가져오기
     const response = await axios.get(apiUrl, { responseType: 'text' });
